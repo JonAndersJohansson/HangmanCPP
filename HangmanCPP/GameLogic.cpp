@@ -1,11 +1,12 @@
-#include "GameLogic.h"
-#include <string>
-#include <vector>
-#include <cctype>  // för std::toupper
-#include <algorithm> // för std::transform
-#include <thread>
-#include <windows.h>
+#include "GameLogic.h"  // Din egen header – krävs för att implementera klassen
+#include <string>       //För att använda string
+#include <vector>       // För att använda vector (motsvarande List<> i C#), vector är value type inte reference type som List<> i C#
+#include <cctype>       // för std::toupper
+#include <algorithm>    // för std::transform
+#include <thread>       // för std::this_thread::sleep_for
+#include <windows.h>    // För att använda SetConsoleTextAttribute (ändra konsoltextfärg)
 
+using namespace std;
 
 GameLogic::GameLogic(GameGraphics& graphics, WordGenerator& generator, Difficulty& diff)
     : gameGraphics(graphics), wordGenerator(generator), difficulty(diff) {
@@ -15,116 +16,120 @@ GameLogic::GameLogic(GameGraphics& graphics, WordGenerator& generator, Difficult
 void GameLogic::Game() {
     while (true) {
         int levelOfDifficulty = difficulty.ChooseGameDifficulty();
-		std::string wordToGuess = wordGenerator.GetRandomWord(levelOfDifficulty);
+		string wordToGuess = wordGenerator.GetRandomWord(levelOfDifficulty);
 
-        std::vector<char> guessedWord(wordToGuess.length(), '_');
-		int lives = 6; // Antal liv
-        std::vector<char> guessedLetters; /*List<char> guessedLetters = new List<char>();*/
+        vector<char> guessedWord(wordToGuess.length(), '_');
+		int lives = 6;                   // Antal liv
+        vector<char> guessedLetters;     // Motsvarar "List<char> guessedLetters = new List<char>();"
 
-        while (lives > 0 && guessedWord != std::vector<char>(wordToGuess.begin(), wordToGuess.end())) {
+        while (lives > 0 && guessedWord != vector<char>(wordToGuess.begin(), wordToGuess.end())) {
             system("cls");
 			gameGraphics.MainGraphics();
 			gameGraphics.ShowHangmanStatus(lives);
-            std::cout << std::endl;
+            cout << endl;
 
-			std::cout << "\nWord: "; // Sktiver ut exempelvis "Ordet: __A_N"
+			cout << "\nWord: "; // Sktiver ut exempelvis "Ordet: __A_N"
             for (char c : guessedWord) {
-                std::cout << c;
+                cout << c;
             }
-            std::cout << std::endl;
+            cout << endl;
 
-			std::cout << "Guessed letters: "; // Skriver ut exempelvis "Gissade bokstäver: A, N, E, B"
+			cout << "Guessed letters: "; // Skriver ut exempelvis "Gissade bokstäver: A, N, E, B"
             for (size_t i = 0; i < guessedLetters.size(); ++i) {
-                std::cout << static_cast<char>(std::toupper(guessedLetters[i]));
+                cout << static_cast<char>(toupper(guessedLetters[i]));
                 if (i < guessedLetters.size() - 1)
-                    std::cout << ", ";
+                    cout << ", ";
             }
-			std::cout << std::endl; // bryter raden med endl
+			cout << endl; // bryter raden med endl
 
-			std::cout << "Lifes left: " << lives << std::endl;
+			cout << "Lifes left: " << lives << endl;
 
-			std::cout << "Guess a letter: ";
-			std::string input; // Deklarera en sträng för att lagra användarens inmatning
-            std::getline(std::cin, input);  // Motsvarar Console.ReadLine()
-            std::transform(input.begin(), input.end(), input.begin(), ::toupper); // Gör om till versaler (ToUpper)
+			cout << "Guess a letter: ";
+			string input; // Deklarera en sträng för att lagra användarens inmatning
+            getline(cin, input);  // Motsvarar Console.ReadLine()
+            transform(input.begin(), input.end(), input.begin(), ::toupper); // Gör om till versaler (ToUpper)
 
-			if (input.length() != 1 || !std::isalpha(input[0])) { // Kontrollera att inmatningen är en enda bokstav
-                std::cout << "Error input. Please only a single letter." << std::endl;
+			if (input.length() != 1 || !isalpha(input[0])) { // Kontrollera att inmatningen är en enda bokstav
+                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+                SetConsoleTextAttribute(hConsole, 14);              // 14 = Gul
+                cout << "Error input. Please only a single letter." << endl;
+                SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
+                this_thread::sleep_for(chrono::milliseconds(1500));
                 continue; // Hoppar över resten av loopen och börjar om
 			}
 
 			char guess = input[0]; // Tar den första (och enda) bokstaven från inmatningen
 
-            if (guessedLetters.end() != std::find(guessedLetters.begin(), guessedLetters.end(), guess)) {
-                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-                SetConsoleTextAttribute(hConsole, 14); // 14 = Gul
-                std::cout << "You have allready guessed letter " << guess << "." << std::endl;
-                SetConsoleTextAttribute(hConsole, 7);  // 7 = Standardfärg
-                std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-                continue; // Hoppar över resten av loopen och börjar om
+            if (guessedLetters.end() != find(guessedLetters.begin(), guessedLetters.end(), guess)) {
+				HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+                SetConsoleTextAttribute(hConsole, 14);              // 14 = Gul
+                cout << "You have allready guessed letter " << guess << "." << endl;
+                SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
+                this_thread::sleep_for(chrono::milliseconds(1500));
+                continue;   // Hoppar över resten av loopen och börjar om
 			}
 
-			guessedLetters.push_back(guess); // Lägger till gissningen i listan över gissade bokstäver
+			guessedLetters.push_back(guess);                        // Lägger till gissningen i listan över gissade bokstäver
 
-            if (wordToGuess.end() != std::find(wordToGuess.begin(), wordToGuess.end(), guess)) {
+            if (wordToGuess.end() != find(wordToGuess.begin(), wordToGuess.end(), guess)) {
                 for (size_t i = 0; i < wordToGuess.length(); i++)
                 {
                     if (wordToGuess[i] == guess)
                         guessedWord[i] = guess;
                 }
-				std::cout << "" << std::endl;
-                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-				SetConsoleTextAttribute(hConsole, 10); // 10 = Grön
-				std::cout << "Correct!" << std::endl;
-                SetConsoleTextAttribute(hConsole, 7);  // 7 = Standardfärg
-                std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+				cout << "" << endl;
+                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+				SetConsoleTextAttribute(hConsole, 10);              // 10 = Grön
+				cout << "Correct!" << endl;
+                SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
+				this_thread::sleep_for(chrono::milliseconds(1500)); // Thread som sover i 1500 millisekunder (1,5 sekunder)
             }
             else {
 				lives--;
-				std::cout << "" << std::endl;
-                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-				SetConsoleTextAttribute(hConsole, 12); // 12 = Röd
-                std::cout << "Wrong! You lose one life." << std::endl;
-                SetConsoleTextAttribute(hConsole, 7);  // 7 = Standardfärg
-                std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+				cout << "" << endl;
+                HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+				SetConsoleTextAttribute(hConsole, 12);              // 12 = Röd
+                cout << "Wrong! You lose one life." << endl;
+                SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
+                this_thread::sleep_for(chrono::milliseconds(1500));
             }
 		}
 
-        if (guessedWord == std::vector<char>(wordToGuess.begin(), wordToGuess.end())) {
+        if (guessedWord == vector<char>(wordToGuess.begin(), wordToGuess.end())) {
             system("cls");
             gameGraphics.MainGraphics();
-            std::cout << "" << std::endl;
+            cout << "" << endl;
             gameGraphics.GraphicsLived();
-            std::cout << "" << std::endl;
+            cout << "" << endl;
 
-            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            SetConsoleTextAttribute(hConsole, 10); // 10 = Grön
-            std::cout << "Congrats!\nYou guessed the word: " << wordToGuess << "\n" << std::endl;
-            SetConsoleTextAttribute(hConsole, 7);  // 7 = Standardfärg
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+            SetConsoleTextAttribute(hConsole, 10);              // 10 = Grön
+            cout << "Congrats!\nYou guessed the word: " << wordToGuess << "\n" << endl;
+            SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
         }
         else {
 			system("cls");
 			gameGraphics.MainGraphics();
-			std::cout << "" << std::endl;
+			cout << "" << endl;
 			gameGraphics.ShowHangmanStatus(lives);
-            std::cout << "" << std::endl;
-            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-            SetConsoleTextAttribute(hConsole, 12); // 12 = Röd
-            std::cout << "Sorry, you loose. The word was: " << wordToGuess << "\n" << std::endl;
-			SetConsoleTextAttribute(hConsole, 7);  // 7 = Standardfärg
+            cout << "" << endl;
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);  // För att ändra i konsollen (färg)
+            SetConsoleTextAttribute(hConsole, 12);              // 12 = Röd
+            cout << "Sorry, you loose. The word was: " << wordToGuess << "\n" << endl;
+			SetConsoleTextAttribute(hConsole, 7);               // Ställer tillbaka,  7 = Standardfärg
         }
 
-        std::cout << "Want to play again? Y/N" << std::endl;
-        std::string continueQuestion;
-        std::getline(std::cin, continueQuestion);  // Motsvarar Console.ReadLine()
-        std::transform(continueQuestion.begin(), continueQuestion.end(), continueQuestion.begin(), ::toupper);
+        cout << "Want to play again? Y/N" << endl;
+        string continueQuestion;
+        getline(cin, continueQuestion);                         // Motsvarar Console.ReadLine()
+        transform(continueQuestion.begin(), continueQuestion.end(), continueQuestion.begin(), ::toupper);
         if (continueQuestion == "Y") {
             continue;
         }
         else {
-            std::cout << "Thanks for playing!" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-            break; // Avslutar spelet
+            cout << "Thanks for playing!" << endl;
+            this_thread::sleep_for(chrono::milliseconds(1500));
+            break;                                              // Avslutar spelet
 		}
     }
 }

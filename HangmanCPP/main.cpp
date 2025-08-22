@@ -11,5 +11,5 @@ int main() {
     App app(startScreen, gameLogic);
     app.Run();
 
-    return 0;
+	return 0; //main() måste returnera ett värde, 0 betyder att programmet avslutades utan fel.
 }

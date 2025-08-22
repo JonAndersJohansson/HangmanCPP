@@ -1,7 +1,7 @@
 #include "DisplayList.h"
-#include <vector>
-#include <string>  #include <conio.h> // för _getch()
-#include <conio.h>
+//#include <vector>
+//#include <string>  
+#include <conio.h> // för _getch()
 
 DisplayList::DisplayList(GameGraphics& graphics) //Konstruktor  
     : gameGraphics(graphics) {
@@ -27,7 +27,7 @@ int DisplayList::BrowseList(const std::vector<std::string>& list) {
         int key = _getch(); // läs tangent utan att visa den
 
         if (key == 224) { // 224 signalerar specialtangent (som pilar)
-            int arrow = _getch(); // läs vilken tangent
+            int arrow = _getch(); // läs vilken tangent som trycks
 
             if (arrow == 72) { // Up arrow
                 selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : list.size() - 1;

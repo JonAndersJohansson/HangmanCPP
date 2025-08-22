@@ -1,16 +1,17 @@
-#include "WordGenerator.h"
-#include <fstream>
-#include <sstream>
-#include <random>
-#include <algorithm>
-#include <cctype>
-#include <iostream>
+#include "WordGenerator.h"  // Din egen header – krävs för att implementera klassen
+#include <fstream>          // För att läsa från fil (ifstream) INKLUDETAR även <string> och <vector>
+#include <random>           // För att slumpa ett ord
+#include <algorithm>        // För std::transform
+#include <cctype>           // För ::toupper
+//#include <iostream>       // Behövs bara för cout och endl
+
+using namespace std;
 
 WordGenerator::WordGenerator() {
     filePath = "words.txt";
 }
 
-std::string WordGenerator::GetRandomWord(int difficulty) {
+string WordGenerator::GetRandomWord(int difficulty) {
 
     switch (difficulty) {
     case 1: return GetEasyWordFromList();
@@ -20,26 +21,26 @@ std::string WordGenerator::GetRandomWord(int difficulty) {
     }
 }
 
-std::string WordGenerator::GetEasyWordFromList() {
+string WordGenerator::GetEasyWordFromList() {
 
-    auto words = ReadWordsFromFile();
-    std::vector<std::string> easyWords;
+	auto words = ReadWordsFromFile();    //auto motsvarar "var" i C#
+	vector<string> easyWords;           // Motsvarar "List<string>" i C#
 
-    for (auto& word : words) {
-        std::transform(word.begin(), word.end(), word.begin(), ::toupper);
+	for (auto& word : words) {          // auto motsvarar "var" i C#, & är pekare dvs ingen kopiering
+        transform(word.begin(), word.end(), word.begin(), ::toupper);
         if (word.length() == 3)
-            easyWords.push_back(word);
+			easyWords.push_back(word); //Motsvarar .Add() i C#
     }
 
     return PickSomeRandomWord(easyWords);
 }
 
-std::string WordGenerator::GetNormalWordFromList() {
+string WordGenerator::GetNormalWordFromList() {
     auto words = ReadWordsFromFile();
-    std::vector<std::string> normalWords;
+    vector<string> normalWords;
 
     for (auto& word : words) {
-        std::transform(word.begin(), word.end(), word.begin(), ::toupper);
+        transform(word.begin(), word.end(), word.begin(), ::toupper);
         if (word.length() == 4 || word.length() == 5)
             normalWords.push_back(word);
     }
@@ -47,12 +48,12 @@ std::string WordGenerator::GetNormalWordFromList() {
     return PickSomeRandomWord(normalWords);
 }
 
-std::string WordGenerator::GetHardWordFromList() {
+string WordGenerator::GetHardWordFromList() {
     auto words = ReadWordsFromFile();
-    std::vector<std::string> hardWords;
+    vector<string> hardWords;
 
     for (auto& word : words) {
-        std::transform(word.begin(), word.end(), word.begin(), ::toupper);
+        transform(word.begin(), word.end(), word.begin(), ::toupper);
         if (word.length() >= 6)
             hardWords.push_back(word);
     }
@@ -60,21 +61,21 @@ std::string WordGenerator::GetHardWordFromList() {
     return PickSomeRandomWord(hardWords);
 }
 
-std::string WordGenerator::PickSomeRandomWord(const std::vector<std::string>& words) {
+string WordGenerator::PickSomeRandomWord(const vector<string>& words) {
     if (words.empty()) return "NOWORDSFOUND";
 
-    std::random_device rd; //ger ett slumpmässigt seed (startvärde).
-    std::mt19937 gen(rd()); // är själva generatorn (en Mersenne Twister – bra och snabb).
-    std::uniform_int_distribution<> dist(0, words.size() - 1); // Skapar ett slumpintervall mellan 0 och antal ord - 1. (Alltså giltiga index i words)
+    random_device rd; //ger ett slumpmässigt seed (startvärde).
+    mt19937 gen(rd()); // är själva generatorn (en Mersenne Twister – bra och snabb).
+    uniform_int_distribution<> dist(0, words.size() - 1); // Skapar ett slumpintervall mellan 0 och antal ord - 1. (Alltså giltiga index i words)
     return words[dist(gen)]; // Använder generatorn gen och intervallet dist för att hämta ett slumpmässigt index. Returnerar ordet på den platsen i listan.
 }
 
-std::vector<std::string> WordGenerator::ReadWordsFromFile() {
-	std::vector<std::string> words; // Tom vektor för att lagra orden
-	std::ifstream file(filePath); // Öppnar filen med ord
-	std::string line; // Variabel för att läsa varje rad
+vector<string> WordGenerator::ReadWordsFromFile() {
+	vector<string> words; // Tom vektor för att lagra orden
+	ifstream file(filePath); // Öppnar filen med ord
+	string line; // Variabel för att läsa varje rad
 
-	while (std::getline(file, line)) { // Läser filen rad för rad
+	while (getline(file, line)) { // Läser filen rad för rad
 		if (!line.empty()) // Kontrollera att raden inte är tom
 			words.push_back(line); // Lägger till raden i vektorn
     }
